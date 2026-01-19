@@ -38,8 +38,13 @@ export default function Home() {
         throw new Error(result.error || '분석에 실패했습니다.');
       }
 
-      // DB ID를 사용해서 리포트 페이지로 이동
-      router.push(`/reports?id=${result.reportId}`);
+      // localStorage에 리포트 데이터 저장 (URI 길이 제한 해결)
+      if (result.data) {
+        localStorage.setItem('last_report_data', JSON.stringify(result.data));
+      }
+
+      // 리포트 페이지로 이동
+      router.push('/reports');
     } catch (error: any) {
       alert(`오류: ${error.message}`);
       setLoading(false);

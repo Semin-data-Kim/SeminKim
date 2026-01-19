@@ -55,6 +55,8 @@ ${jobPostingText}
 **응답 형식 (반드시 JSON만 출력):**
 {
   "matching_score": 85,
+  "match_reason": "매칭 점수에 대한 한 문장 설명",
+  "required_experience": "요구 경력 (예: 3년 이상)",
   "winning_points": [
     {
       "title": "강점 제목",
@@ -70,17 +72,18 @@ ${jobPostingText}
   "interview_questions": [
     {
       "question": "면접 예상 질문",
-      "intent": "질문 의도",
-      "suggested_answer": "추천 답변 방향"
+      "tip": "답변 팁"
     }
   ]
 }
 
 **분석 가이드:**
 - matching_score: 0-100 사이의 점수 (이력서와 공고의 적합도)
+- match_reason: 매칭 점수에 대한 간단한 이유 (한 문장)
+- required_experience: 공고에서 요구하는 경력 추출
 - winning_points: 이력서의 강점 3-5개 (공고 요구사항과 매칭되는 부분)
 - strategic_advices: 보완이 필요한 부분과 전략 3-5개
-- interview_questions: 예상 면접 질문 5-7개
+- interview_questions: 예상 면접 질문 5-7개 (각 질문에 tip 포함)
 
 응답은 반드시 순수한 JSON 형식만 출력하세요. 마크다운이나 다른 텍스트는 포함하지 마세요.`,
         },
@@ -132,10 +135,27 @@ ${jobPostingText}
       );
     }
 
-    // DB ID만 반환 (URI 길이 제한 문제 해결)
+    // 클라이언트가 기대하는 형식으로 데이터 구성
+    const reportData = {
+      header: {
+        company_name: companyName || '회사명 없음',
+        job_title: jobTitle || '제목 없음',
+        match_score: analysisData.matching_score || 0,
+        match_reason: analysisData.match_reason || '분석 완료되었습니다.',
+        required_experience: analysisData.required_experience || '정보 없음',
+      },
+      career_assessment: {
+        winning_points: analysisData.winning_points || [],
+        strategic_advices: analysisData.strategic_advices || [],
+      },
+      interview_strategy: analysisData.interview_questions || [],
+    };
+
+    // DB ID와 전체 데이터 반환
     return NextResponse.json({
       success: true,
       reportId: data.id,
+      data: reportData,
     });
   } catch (error: any) {
     console.error('분석 에러:', error);
